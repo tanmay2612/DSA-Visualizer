@@ -6,3 +6,4 @@ export * from './EmptyState';
 export * from './PageLoader';
 export * from './PlaceholderPage';
 export * from './HeroVisualization';
+export * from './AlgorithmCard';

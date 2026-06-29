@@ -55,6 +55,7 @@ export function useAlgorithmEngine<TInput = number[]>() {
     engine,
     currentStep: engine.currentStep,
     stepsUpToCurrent: engine.stepsUpToCurrent,
+    allSteps: engine.allSteps,
     progress: engine.progress,
     input: engine.input,
     speed: engine.speedMultiplier,

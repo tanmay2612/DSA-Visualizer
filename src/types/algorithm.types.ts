@@ -29,7 +29,9 @@ export type ComplexityNotation =
   | 'O(n log n)'
   | 'O(n^2)'
   | 'O(2^n)'
-  | 'O(n!)';
+  | 'O(n!)'
+  | 'O(V + E)'
+  | 'O((V + E) log V)';
 
 export interface AlgorithmComplexity {
   time: {
@@ -40,19 +42,4 @@ export interface AlgorithmComplexity {
   space: ComplexityNotation;
 }
 
-/**
- * Metadata describing one algorithm for display purposes
- * (cards, detail pages, search). The `run` generator and full
- * `AlgorithmDefinition` interface (per the architecture doc)
- * are introduced in Phase 2 — Phase 1 only needs metadata to
- * populate category pages and navigation.
- */
-export interface AlgorithmMeta {
-  id: string;
-  name: string;
-  category: AlgorithmCategory;
-  visualizationType: VisualizationType;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  description: string;
-  complexity: AlgorithmComplexity;
-}
+export type AlgorithmDifficulty = 'beginner' | 'intermediate' | 'advanced';

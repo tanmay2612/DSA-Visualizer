@@ -77,7 +77,15 @@ export class AlgorithmEngine<TInput = number[]> {
 
   play(speed = this.speed): void {
     if (!this.definition || this.isFinished || this.playing) return;
-    this.speed = speed;
+    // Defensive: a non-finite or non-positive speed (e.g. accidentally
+    // passing a DOM event into this parameter at a call site) would
+    // make scheduleNextTick's BASE_DELAY_MS / speed divide-by-garbage,
+    // producing NaN — and setInterval(fn, NaN) fires essentially
+    // immediately on every tick, blowing through all remaining steps
+    // in a single render frame instead of animating. Falling back to
+    // the last known-good speed keeps a caller bug from corrupting
+    // playback instead of just rejecting it silently.
+    this.speed = Number.isFinite(speed) && speed > 0 ? speed : this.speed;
     this.playing = true;
     this.notify();
     this.scheduleNextTick();
@@ -105,6 +113,7 @@ export class AlgorithmEngine<TInput = number[]> {
   }
 
   setSpeed(speed: number): void {
+    if (!Number.isFinite(speed) || speed <= 0) return;
     this.speed = speed;
     // If currently playing, restart the timer at the new interval
     // rather than waiting for the next tick to pick it up.
@@ -169,6 +178,20 @@ export class AlgorithmEngine<TInput = number[]> {
    */
   get stepsUpToCurrent(): AlgorithmStep[] {
     return this.currentIndex >= 0 ? this.steps.slice(0, this.currentIndex + 1) : [];
+  }
+
+  /**
+   * Every step from this run, regardless of playback position.
+   * Exists for arrayAdapter's pre-playback fallback: when
+   * `stepsUpToCurrent` is empty (currentIndex === -1, before the
+   * user has pressed play or stepped forward), the adapter still
+   * needs `steps[0]`'s array (ids+values) to render the algorithm's
+   * untouched initial state — see arrayAdapter's doc comment. A
+   * fresh slice, like `stepsUpToCurrent`, so callers can't mutate
+   * engine-internal state through it.
+   */
+  get allSteps(): AlgorithmStep[] {
+    return this.steps.slice();
   }
 
   get isPlaying(): boolean {

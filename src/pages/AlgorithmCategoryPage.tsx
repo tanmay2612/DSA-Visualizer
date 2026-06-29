@@ -1,6 +1,13 @@
 import { LayoutGrid } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { PlaceholderPage } from '@/components/common';
+import { getAlgorithmsByCategory } from '@/algorithms/registry';
+import {
+  AlgorithmCard,
+  Breadcrumb,
+  EmptyState,
+  PageContainer,
+  SectionHeading,
+} from '@/components/common';
 import { ROUTES } from '@/constants/routes';
 import { SIDEBAR_CATEGORIES } from '@/constants/algorithmMeta';
 import NotFoundPage from './NotFoundPage';
@@ -15,18 +22,42 @@ export default function AlgorithmCategoryPage() {
     return <NotFoundPage />;
   }
 
+  // The actual source of truth for "does this category have
+  // content" is the registry, not the sidebar's isAvailable flag —
+  // the flag is a coarse signal for navigation, this is the real
+  // query. Querying it directly here means this page can never
+  // drift out of sync with what algorithms actually exist, the way
+  // a second hardcoded "is this ready" flag could.
+  const algorithms = getAlgorithmsByCategory(matched.category);
+
   return (
-    <PlaceholderPage
-      title={matched.label}
-      description={`Step-by-step visualizations for ${matched.label.toLowerCase()} algorithms.`}
-      breadcrumbs={[
-        { label: 'Home', path: ROUTES.home },
-        { label: 'Algorithms', path: ROUTES.algorithms },
-        { label: matched.label },
-      ]}
-      emptyIcon={LayoutGrid}
-      emptyTitle={`${matched.label} algorithms are coming soon`}
-      emptyDescription="This category is on the roadmap and will be filled in during a later development phase."
-    />
+    <PageContainer className="flex flex-col gap-8">
+      <Breadcrumb
+        items={[
+          { label: 'Home', path: ROUTES.home },
+          { label: 'Algorithms', path: ROUTES.algorithms },
+          { label: matched.label },
+        ]}
+      />
+
+      <SectionHeading
+        title={matched.label}
+        description={`Step-by-step visualizations for ${matched.label.toLowerCase()} algorithms.`}
+      />
+
+      {algorithms.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {algorithms.map((algorithm) => (
+            <AlgorithmCard key={algorithm.id} algorithm={algorithm} />
+          ))}
+        </div>
+      ) : (
+        <EmptyState
+          icon={LayoutGrid}
+          title={`${matched.label} algorithms are coming soon`}
+          description="This category is on the roadmap and will be filled in during a later development phase."
+        />
+      )}
+    </PageContainer>
   );
 }
