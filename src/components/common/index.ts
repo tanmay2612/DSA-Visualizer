@@ -8,3 +8,4 @@ export * from './PlaceholderPage';
 export * from './HeroVisualization';
 export * from './AlgorithmCard';
 export * from './GradientBlobBackground';
+export * from './ErrorBoundary';

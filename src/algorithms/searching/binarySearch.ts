@@ -91,6 +91,18 @@ export const binarySearch: AlgorithmDefinition<SearchInput> = {
     '    else: hi = mid - 1',
     '  return not found',
   ],
+  // `eliminate-range` represents the consequence of whichever of
+  // lines 5-6 fired (lo = mid+1 or hi = mid-1) — mapped to line 5 as
+  // the more representative branch rather than splitting it by
+  // direction, which would need the step to carry which branch was
+  // taken (it doesn't, and adding that just for pseudocode display
+  // wasn't worth the type change for this honestly-approximate
+  // feature).
+  pseudocodeLineMap: {
+    'compare-target': 4,
+    found: 4,
+    'eliminate-range': 5,
+  },
   generateRandomInput: generateBinarySearchInput,
   run: binarySearchGenerator,
 };

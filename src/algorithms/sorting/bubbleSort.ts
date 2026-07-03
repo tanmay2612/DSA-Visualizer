@@ -73,6 +73,15 @@ export const bubbleSort: AlgorithmDefinition<number[]> = {
     '  if not swapped:',
     '    break',
   ],
+  // Only `compare` and `swap` have one unambiguous corresponding
+  // line each. `mark-sorted`/`done` are visualization-only
+  // bookkeeping with no clean pseudocode equivalent — better to
+  // leave them unmapped (PseudocodeViewer just shows no highlight
+  // for those steps) than force an inaccurate association.
+  pseudocodeLineMap: {
+    compare: 3,
+    swap: 4,
+  },
   generateRandomInput: (size: number) => generateRandomArray(size),
   run: bubbleSortGenerator,
 };

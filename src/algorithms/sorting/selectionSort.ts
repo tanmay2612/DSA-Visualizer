@@ -64,6 +64,17 @@ export const selectionSort: AlgorithmDefinition<number[]> = {
     '  if minIndex != i:',
     '    swap(array[i], array[minIndex])',
   ],
+  // `mark-active` fires both at the once-per-pass initialization
+  // (line 1, `minIndex = i`) and the more frequent in-loop update
+  // (line 4, `minIndex = j`) — mapped to line 4 as the more
+  // representative occurrence, an honest approximation rather than
+  // a claim of perfect precision (see AlgorithmDefinition's
+  // pseudocodeLineMap doc comment in shared/types.ts).
+  pseudocodeLineMap: {
+    'mark-active': 4,
+    compare: 3,
+    swap: 6,
+  },
   generateRandomInput: (size: number) => generateRandomArray(size),
   run: selectionSortGenerator,
 };

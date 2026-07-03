@@ -294,8 +294,23 @@ export interface AlgorithmDefinition<TInput = number[]> {
   /** One sentence, shown on AlgorithmCard and the detail page header. */
   description: string;
   complexity: AlgorithmComplexity;
-  /** Pseudocode lines, rendered by PseudocodeViewer in a later phase. */
+  /** Pseudocode lines, rendered by PseudocodeViewer. */
   pseudocode: string[];
+  /**
+   * Maps a step's `type` to the 0-indexed line in `pseudocode` it
+   * corresponds to, so PseudocodeViewer can highlight "this is the
+   * line currently executing." Optional, and intentionally a
+   * step-TYPE mapping rather than a true per-yield instruction
+   * pointer: for simple algorithms (bubble sort: one `compare` site,
+   * one `swap` site) this is fully precise. For algorithms with
+   * multiple distinct call sites sharing a step type (e.g. several
+   * different `compare`s across recursive calls), this maps to
+   * whichever site is most representative — an honest limitation,
+   * not a claim of perfect instruction-level sync. Omitted entirely
+   * means PseudocodeViewer renders the pseudocode with no
+   * highlighting, which is still useful as static reference text.
+   */
+  pseudocodeLineMap?: Partial<Record<AlgorithmStep['type'], number>>;
   /** Produces a random input of the requested size for this algorithm. */
   generateRandomInput: (size: number) => TInput;
   /** The algorithm itself. Pure generator — no side effects beyond yielding steps. */

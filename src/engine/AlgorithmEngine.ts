@@ -41,6 +41,7 @@ export class AlgorithmEngine<TInput = number[]> {
   private timerId: ReturnType<typeof setInterval> | null = null;
   private speed = 1;
   private listeners = new Set<Listener>();
+  private version = 0; // incremented on every notify(), used by useSyncExternalStore
 
   private definition: AlgorithmDefinition<TInput> | null;
 
@@ -57,7 +58,18 @@ export class AlgorithmEngine<TInput = number[]> {
   }
 
   private notify(): void {
+    this.version += 1;
     this.listeners.forEach((listener) => listener());
+  }
+
+  /** Monotonically increasing counter, incremented on every state
+   *  change. Used by `useAlgorithmEngine`'s `useSyncExternalStore`
+   *  snapshot to give React a value that actually differs between
+   *  renders — returning the engine object itself was a bug: since
+   *  `Object.is(engine, engine)` is always true, React would bail
+   *  out of re-rendering even after state changed. */
+  get stateVersion(): number {
+    return this.version;
   }
 
   /**

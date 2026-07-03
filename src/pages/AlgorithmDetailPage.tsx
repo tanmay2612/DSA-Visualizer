@@ -16,9 +16,9 @@ import type {
   TreeAlgorithmStep,
 } from '@/algorithms/shared/types';
 import { ArrayCanvas, GraphCanvas, TreeCanvas } from '@/components/visualization';
-import { ControlPanel } from '@/components/controls';
-import { StatsPanel } from '@/components/panels';
-import { Breadcrumb, PageContainer, SectionHeading } from '@/components/common';
+import { ArrayInputControls, ControlPanel } from '@/components/controls';
+import { PseudocodeViewer, StepInfoPanel, StatsPanel } from '@/components/panels';
+import { Breadcrumb, ErrorBoundary, PageContainer, SectionHeading } from '@/components/common';
 import { Badge, Button } from '@/components/ui';
 import { ROUTES } from '@/constants/routes';
 import { cn } from '@/lib/cn';
@@ -60,10 +60,12 @@ export default function AlgorithmDetailPage() {
     stepForward,
     stepBackward,
     reset,
+    jumpToStep,
     setSpeed,
     randomizeInput,
     stepsUpToCurrent,
     allSteps,
+    currentStep,
     input,
     speed,
     progress,
@@ -97,6 +99,21 @@ export default function AlgorithmDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [algorithm, initialize]);
 
+  // Applies a user-chosen input shape or custom array directly,
+  // bypassing algorithm.generateRandomInput entirely — the user has
+  // already supplied the exact array they want to see, there's
+  // nothing to generate. Only meaningful for array-visualization
+  // algorithms (ArrayInputControls is only rendered for those), but
+  // the function itself doesn't need to branch on visualizationType
+  // since initialize() is already generic over TInput.
+  const handleApplyArrayInput = useCallback(
+    (values: number[]) => {
+      if (!algorithm) return;
+      initialize(algorithm, values);
+    },
+    [algorithm, initialize],
+  );
+
   // Wrapped to strip arguments: `play` accepts an optional speed
   // override, but onClick/keyboard handlers must never forward a
   // SyntheticEvent or KeyboardEvent into that parameter — that was
@@ -105,6 +122,13 @@ export default function AlgorithmDetailPage() {
   // useCallback keeps this stable across renders so the keyboard
   // listener below isn't torn down and reattached every render.
   const handlePlay = useCallback(() => play(), [play]);
+
+  // Jumps straight to the final step using the engine's existing
+  // jumpToStep — no new engine capability needed, this is purely
+  // new UI wiring onto something that already worked.
+  const handleJumpToEnd = useCallback(() => {
+    jumpToStep(progress.totalSteps - 1);
+  }, [jumpToStep, progress.totalSteps]);
 
   // play/pause/stepForward/stepBackward/reset are all stable
   // (memoized inside useAlgorithmEngine), so this listener is
@@ -118,6 +142,7 @@ export default function AlgorithmDetailPage() {
     onStepForward: stepForward,
     onStepBackward: stepBackward,
     onReset: reset,
+    onJumpToEnd: handleJumpToEnd,
     enabled: Boolean(algorithm),
   });
 
@@ -167,7 +192,7 @@ export default function AlgorithmDetailPage() {
         <SectionHeading
           eyebrow={algorithm.category}
           title={algorithm.name}
-          description="Step through the algorithm using the controls below or the keyboard — space to play/pause, arrow keys to step, R to reset."
+          description="Step through the algorithm using the controls below or the keyboard — space to play/pause, arrow keys to step, R to jump to start, End to jump to end, Esc to pause."
         />
         <div className="flex items-center gap-2">
           <Button
@@ -185,17 +210,41 @@ export default function AlgorithmDetailPage() {
         </div>
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={algorithm.id}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
-          {canvas}
-        </motion.div>
-      </AnimatePresence>
+      {algorithm.visualizationType === 'array' && (
+        <ArrayInputControls
+          size={Array.isArray(input) ? input.length : defaultSize}
+          onApply={handleApplyArrayInput}
+        />
+      )}
+
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <div className="flex flex-col gap-4">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={algorithm.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ErrorBoundary variant="inline" label="visualization" key={algorithm.id}>
+                {canvas}
+              </ErrorBoundary>
+            </motion.div>
+          </AnimatePresence>
+
+          <StepInfoPanel step={currentStep} algorithmName={algorithm.name} />
+        </div>
+
+        <PseudocodeViewer
+          pseudocode={algorithm.pseudocode}
+          activeLine={
+            currentStep && algorithm.pseudocodeLineMap
+              ? algorithm.pseudocodeLineMap[currentStep.type]
+              : null
+          }
+        />
+      </div>
 
       <div className="flex flex-col gap-4">
         <ControlPanel
@@ -208,6 +257,7 @@ export default function AlgorithmDetailPage() {
           onStepForward={stepForward}
           onStepBackward={stepBackward}
           onReset={reset}
+          onJumpToEnd={handleJumpToEnd}
           onSpeedChange={setSpeed}
           onRandomize={() => randomizeInput(defaultSize)}
         />

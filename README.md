@@ -5,20 +5,45 @@ https://dsa-visualizer-six-rose.vercel.app/
 
 An interactive, in-browser playground for understanding data structures and algorithms through step-by-step visualizations — built as a portfolio-quality demonstration of frontend architecture, not just a single feature.
 
-## Status: Phase 7 — Tree Visualization Engine + UI Polish
+## Status: Phases 8–9 (in progress) — Learning Platform + Production Quality
 
-Phases 1–6 (foundation, engine core, animation/control polish, sorting suite, searching, graphs) are complete. Phase 7 adds the third and final visualization type — `bst-insert`, `bst-delete`, `in-order-traversal` — plus an incremental UI polish pass across the whole app, kept deliberately separate from and secondary to the tree implementation itself.
+Phases 1–7 complete. This round implemented three concrete, verified slices spanning Phase 8 (interactive learning) and Phase 9 (production quality):
 
-**Trees are structurally closer to arrays than to graphs.** A graph's structure never changes during BFS/DFS/Dijkstra, only its visual state does (Phase 6); a BST's structure genuinely changes with every insert, delete, and rotation. So `TreeAlgorithmStep` follows arrays' "every step carries a full snapshot" pattern (`root: TreeNode | null`) rather than graphs' "static structure, separate step history" pattern — a deliberate architectural choice, not an oversight, made explicit in the type's doc comment so the reasoning doesn't have to be re-derived later.
+---
 
-- **Layout is the adapter's job, computed fresh every call** (in-order rank for x, depth for y) — unlike a graph's one-time circular layout, there's no stable layout to cache between two different tree shapes.
-- **`TreeCanvas` animates node position via Framer Motion's `animate={{x, y}}`**, keyed by each node's stable id (assigned once at creation, never reassigned — see `treeHelpers.ts`), so a restructuring insert/delete animates as nodes sliding to new positions rather than popping to new locations.
-- **BST delete was the highest-risk algorithm in the project so far** — three structurally different cases (leaf, one child, two children via in-order successor), each capable of silently breaking the BST invariant. Verified with 40 test cases: every structural case by hand, plus 30 randomized trials checking BST-validity, correct value set, and correct node count after every single deletion.
-- **The engine, `useAlgorithmEngine`, `ControlPanel`, and registry needed no changes beyond the established add-a-category pattern** — confirming for the third time that the architecture's "logic separate from rendering" boundary holds across a genuinely different problem shape (mutating structure vs. static structure vs. mutating array).
+**Phase 8 slice 2: Step info panel + per-step explanations (this round)**
 
-**UI polish pass** (incremental, additive, zero architecture changes): refined `Card`/`Button` shadow and transition treatment, a real stat-card `StatsPanel` (comparisons/mutations counted generically from step-type names — no engine changes — plus a component-local elapsed-time tracker, not engine-tracked), a segmented `ControlPanel` button cluster with an animated play/pause icon swap, animated gradient-blob hero background, corrected stale homepage copy (it previously implied zero categories were live), and helpful CTAs added to the `Compare` and empty-category empty states. Verified after polish: full 14-algorithm regression suite still passes, confirming the visual changes didn't touch behavior.
+Added `StepInfoPanel` — shows a plain-English explanation of what the algorithm is currently doing plus the key variable values at each step (`i`, `j`, `mid`, `target`, `nodeId`, `dist`, etc.), derived entirely from the step data that was _already in the step types' fields_. No algorithm files changed. Covers all three visualization domains (array, graph, tree) via one exhaustive switch, with a TypeScript exhaustiveness check confirming every step type is handled. Examples:
 
-Visit `/algorithm/trees/{bst-insert, bst-delete, in-order-traversal}`. All three visualization types (array, graph, tree) and four algorithm categories (sorting, searching, graphs, trees) are now live.
+- `compare` → "Comparing 5 at [0] with 2 at [1]. 5 > 2, a swap is needed."
+- `relax-edge` → "Edge e2 relaxed — node n3 now has a shorter known distance: 7."
+- `eliminate-range` → "Eliminating positions 0–3: target cannot be in this half. Search space halved."
+
+---
+
+**Phase 9 slice 1: Error boundaries**
+
+First error boundary infrastructure in the project (confirmed by grep before writing any code — zero existed through Phase 8). Two boundaries:
+
+1. **Route-level** in `RootLayout`, keyed by pathname so a crash on one page doesn't permanently disable all subsequent navigation during the session without a reload.
+2. **Inline** in `AlgorithmDetailPage`, wrapping only the canvas subtree — a crash in the adapter/canvas path falls back to a descriptive error state while the controls/breadcrumb/pseudocode stay functional.
+
+React error boundaries require class components (no hook equivalent in React 19); the `override` modifier is enforced correctly by the strict tsconfig's `noImplicitOverride` setting, which caught this immediately on the first typecheck.
+
+---
+
+**Phase 9 slice 2: Real test suite — 136 tests, all passing**
+
+Vitest configured (separate from `vite.config.ts` to keep the production build entirely untouched), 6 test files, 136 tests across:
+
+- **`AlgorithmEngine.test.ts`** (34 tests) — full lifecycle: initialize, stepForward/stepBackward/jumpToStep/reset/play/pause/randomizeInput, including the Phase 2 `play(syntheticEvent)` bug as a regression test
+- **`arrayAdapter.test.ts`** (14 tests) — the three accumulation behaviors that had real bugs during development: sorted-mark clearing on overwrite (Phase 4 merge-sort bug), eliminated-range accumulation, and `done.outcome` discrimination (Phase 5 not-found incorrectly showing "sorted")
+- **`sorting.test.ts`** (42 tests) — 7 input cases × 6 algorithms, including degenerate inputs (ascending, descending, duplicates, empty, single-element)
+- **`searching.test.ts`** (8 tests) — linear and binary search, including the eliminated-range coverage check for not-found runs
+- **`bst.test.ts`** (15 tests) — all three structural BST delete cases (leaf, one child, two children/root), plus invariant preservation checked at every intermediate snapshot
+- **`parseCustomArrayInput.test.ts`** (23 tests) — the Phase 8 custom input parser, boundary values, malformed patterns, and descriptive error messages
+
+One real bug caught by the tests during this session: my initial tests assumed `stepForward()`/`stepBackward()` returned `true`/`false`, but the public API returns `void` (only the internal method returns boolean). Fixed the tests to verify observable effects instead. This is exactly what tests are for.
 
 ## Tech stack
 

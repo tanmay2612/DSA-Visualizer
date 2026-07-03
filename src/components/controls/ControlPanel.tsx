@@ -1,5 +1,13 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Pause, Play, RotateCcw, Shuffle, SkipBack, SkipForward } from 'lucide-react';
+import {
+  ChevronsRight,
+  Pause,
+  Play,
+  RotateCcw,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+} from 'lucide-react';
 import { Button } from '@/components/ui';
 import { SpeedSlider } from './SpeedSlider';
 
@@ -13,6 +21,13 @@ export interface ControlPanelProps {
   onStepForward: () => void;
   onStepBackward: () => void;
   onReset: () => void;
+  /** Jumps directly to the final step without playing through every
+   *  step in between — distinct from `onReset` (jump to the start)
+   *  and from holding "step forward," which would still take O(n)
+   *  clicks. Optional so existing call sites that haven't wired up
+   *  a jump-to-end handler don't break — the button simply doesn't
+   *  render without it, rather than crashing on a missing prop. */
+  onJumpToEnd?: () => void;
   onSpeedChange: (speed: number) => void;
   onRandomize: () => void;
 }
@@ -24,13 +39,12 @@ export interface ControlPanelProps {
  * The exact same component drives every sorting, searching, graph,
  * and tree algorithm without a single change here.
  *
- * Polish pass: the four transport buttons (reset/back/play/forward)
- * are grouped into one visually connected segmented cluster instead
- * of individually-spaced buttons, which reads more like a deliberate
- * control surface (the dev-tool reference points — Linear, Raycast —
- * group related actions this way) rather than a loose row of icons.
- * The play/pause icon cross-fades via AnimatePresence on toggle
- * instead of swapping instantly. Props and behavior are unchanged.
+ * `onReset` already IS "jump to beginning" (AlgorithmEngine.reset()
+ * sets currentIndex back to -1) — no separate button needed for
+ * that. `onJumpToEnd` is the one genuinely new transport action
+ * (Phase 8), using the engine's existing `jumpToStep`, which was
+ * already exposed through useAlgorithmEngine before this feature
+ * needed it — no engine changes required.
  */
 export function ControlPanel({
   isPlaying,
@@ -42,6 +56,7 @@ export function ControlPanel({
   onStepForward,
   onStepBackward,
   onReset,
+  onJumpToEnd,
   onSpeedChange,
   onRandomize,
 }: ControlPanelProps) {
@@ -52,8 +67,8 @@ export function ControlPanel({
           variant="ghost"
           size="icon"
           onClick={onReset}
-          aria-label="Reset to start"
-          title="Reset"
+          aria-label="Jump to beginning"
+          title="Jump to beginning"
         >
           <RotateCcw className="size-4" />
         </Button>
@@ -109,6 +124,19 @@ export function ControlPanel({
             <SkipForward className="size-4" />
           </Button>
         </div>
+
+        {onJumpToEnd && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onJumpToEnd}
+            disabled={isFinished}
+            aria-label="Jump to end"
+            title="Jump to end"
+          >
+            <ChevronsRight className="size-4" />
+          </Button>
+        )}
       </div>
 
       <SpeedSlider speed={speed} onSpeedChange={onSpeedChange} />

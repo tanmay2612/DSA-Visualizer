@@ -19,13 +19,22 @@ export function useAlgorithmEngine<TInput = number[]>() {
 
   // useSyncExternalStore re-renders the component whenever the
   // engine calls notify() (on any state change: step, play, pause,
-  // initialize, etc). The snapshot getter just returns the engine
-  // itself — a stable reference — since consumers read off its
-  // getters (currentStep, progress, etc.) rather than expecting a
-  // plain object snapshot.
+  // initialize, etc). The snapshot returns engine.stateVersion — a
+  // monotonically increasing counter — so React sees a new value on
+  // each notification and schedules a re-render.
+  //
+  // IMPORTANT: returning `engine` (the object itself) here was the
+  // original implementation and was a subtle bug: Object.is(engine,
+  // engine) is always true, so React's snapshot comparison always
+  // concluded "nothing changed" and bailed out of re-rendering, even
+  // after initialize()/stepForward()/etc. mutated internal state.
+  // This meant the canvas never updated after calling handleApplyArrayInput
+  // (custom input) because that path calls initialize() directly
+  // rather than going through the useEffect that would otherwise
+  // trigger a re-render by causing `algorithm` to change.
   useSyncExternalStore(
     (onStoreChange) => engine.subscribe(onStoreChange),
-    () => engine,
+    () => engine.stateVersion,
   );
 
   // All action callbacks are memoized off `engine` (itself stable for

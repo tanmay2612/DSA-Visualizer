@@ -95,6 +95,14 @@ export const bfs: AlgorithmDefinition<GraphTraversalInput> = {
     '        visited.add(neighbor)',
     '        queue.enqueue(neighbor)',
   ],
+  // `mark-finalized` is visualization-only bookkeeping (the moment
+  // BFS is conceptually "done with" a node) with no single clean
+  // pseudocode line — left unmapped rather than forced onto one,
+  // the same choice bubbleSort makes for its own bookkeeping steps.
+  pseudocodeLineMap: {
+    'visit-node': 4,
+    'relax-edge': 8,
+  },
   generateRandomInput: generateBfsInput,
   run: bfsGenerator,
 };
