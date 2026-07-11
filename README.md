@@ -20,7 +20,15 @@ Built as a final-year project and portfolio piece: a fully working, tested, and 
 
 ## Screenshots
 
-_Add screenshots or a short GIF here before sharing this repo — e.g. the algorithm detail view, Comparison Mode side-by-side, and the Interview Problems list. `docs/screenshots/` is a reasonable place to keep them._
+<img width="2848" height="1468" alt="Screenshot 2026-07-11 111329" src="https://github.com/user-attachments/assets/3ed2bdf3-8df0-49a9-8609-6c1ce81e666a" />
+<img width="2850" height="1462" alt="Screenshot 2026-07-11 111347" src="https://github.com/user-attachments/assets/769f1b94-d415-4bcc-bcdc-77103aa1e38c" />
+<img width="2842" height="1458" alt="Screenshot 2026-07-11 111403" src="https://github.com/user-attachments/assets/4a56b5f4-6e87-4b7d-8c73-bc43fff62ec2" />
+<img width="2842" height="1456" alt="Screenshot 2026-07-11 111420" src="https://github.com/user-attachments/assets/2fa4eda4-3151-4d73-97d1-7c353ca1394a" />
+<img width="2848" height="1454" alt="Screenshot 2026-07-11 111501" src="https://github.com/user-attachments/assets/1f5e0806-3776-4be1-ab0b-ae4ba21950c9" />
+<img width="2846" height="1462" alt="Screenshot 2026-07-11 111516" src="https://github.com/user-attachments/assets/6e3c3519-9168-4343-854f-a31779a9533b" />
+<img width="2848" height="1462" alt="Screenshot 2026-07-11 111549" src="https://github.com/user-attachments/assets/8165b5ef-06fb-4270-a116-437f5a15202c" />
+
+
 
 ## Supported algorithms
 
