@@ -123,7 +123,6 @@ The production build is verified against Vercel's default static-site settings (
 
 - Two more interview problems: Move Zeroes, Longest Common Prefix
 - Merge Sort / Quick Sort lanes in Comparison Mode (their recursive traces need a different timeline model than the three linear-pass sorts currently supported)
-- Screenshots/GIFs in this README
 - A proper "stack" visual for Valid Parentheses (currently visualized as a fixed-position character array with accumulating highlights, rather than an actually growing/shrinking stack)
 
 Deliberately **not** planned, to keep this a focused student project rather than a product: authentication, a backend/database, AI features, an online judge, arbitrary code execution, multiplayer/social features, or a payment system.
