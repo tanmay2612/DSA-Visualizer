@@ -29,6 +29,10 @@ export interface ArraySceneElement {
   id: number;
   value: number;
   state: ElementVisualState;
+  /** See ArrayElement's doc comment in algorithms/shared/types.ts —
+   *  forwarded through unchanged by arrayAdapter, and used by
+   *  ArrayCanvas in place of `value` for display when present. */
+  label?: string;
 }
 
 export interface ArraySceneDescription {

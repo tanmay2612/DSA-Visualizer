@@ -156,6 +156,14 @@ function extractStepInfo(step: AlgorithmStep | null, algorithmName: string): Ste
       return { explanation: 'Target found.', variables: [] };
     }
 
+    case 'mark-result': {
+      const labels = step.indices.map((i) => step.array[i]?.label ?? step.array[i]?.value ?? '?');
+      return {
+        explanation: `Answer highlight: position${step.indices.length === 1 ? '' : 's'} [${step.indices.join(', ')}] (${labels.join(', ')}).`,
+        variables: [{ name: 'resultIndices', value: `[${step.indices.join(', ')}]` }],
+      };
+    }
+
     case 'done': {
       if ('outcome' in step) {
         const o = step.outcome;
@@ -169,6 +177,11 @@ function extractStepInfo(step: AlgorithmStep | null, algorithmName: string): Ste
           };
         if (o === 'not-found')
           return { explanation: 'Target not in array. Algorithm complete.', variables: [] };
+        if (o === 'result')
+          return {
+            explanation: `${step.resultLabel} Algorithm complete.`,
+            variables: [{ name: 'resultIndices', value: `[${step.indices.join(', ')}]` }],
+          };
         if (o === 'traversal')
           return { explanation: 'All reachable nodes visited. Traversal complete.', variables: [] };
         if (o === 'path-found')

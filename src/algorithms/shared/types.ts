@@ -31,6 +31,16 @@ import type {
 export interface ArrayElement {
   id: number;
   value: number;
+  /**
+   * Optional display override (Phase 10 — Interview Problem Mode).
+   * `value` still drives bar height and comparisons, but algorithms
+   * whose elements aren't naturally "a number to look at" (e.g.
+   * Valid Parentheses, where each element is a bracket character)
+   * can set `label` to control what text renders under the bar
+   * instead of `value`. Optional and additive: every existing
+   * algorithm omits it and renders exactly as before.
+   */
+  label?: string;
 }
 
 /**
@@ -87,10 +97,36 @@ export type ArrayAlgorithmStep =
   | { type: 'mark-sorted'; indices: number[]; array: ArrayElement[] }
   | { type: 'eliminate-range'; indices: number[]; array: ArrayElement[] }
   | { type: 'found'; index: number; array: ArrayElement[] }
+  /**
+   * `mark-result` (Phase 10 — Interview Problem Mode): highlights an
+   * arbitrary set of indices as "the answer," distinct from `found`
+   * (always exactly one index, searching-specific) and `mark-sorted`
+   * (a sort-specific accumulating set). Interview problems can have
+   * a multi-index answer (Two Sum's pair, Kadane's subarray range,
+   * Best-Time-to-Buy-and-Sell-Stock's buy/sell days) that doesn't
+   * fit either existing shape, so this is a new, generically-named
+   * variant rather than overloading `found`'s single-index shape.
+   */
+  | { type: 'mark-result'; indices: number[]; array: ArrayElement[] }
   | (
       | { type: 'done'; array: ArrayElement[]; outcome: 'sort' }
       | { type: 'done'; array: ArrayElement[]; outcome: 'found'; foundIndex: number }
       | { type: 'done'; array: ArrayElement[]; outcome: 'not-found' }
+      /**
+       * Generic "an interview problem finished evaluating" outcome.
+       * `indices` marks the answer's positions (may be empty — e.g.
+       * Valid Parentheses' valid case marks nothing). `resultLabel`
+       * is a short human-readable answer ("Sum = 9", "Valid",
+       * "Profit = 5") surfaced by StepInfoPanel/StatsPanel without
+       * either component needing per-problem knowledge.
+       */
+      | {
+          type: 'done';
+          array: ArrayElement[];
+          outcome: 'result';
+          indices: number[];
+          resultLabel: string;
+        }
     );
 
 // Graph/tree step unions land in Phases 6/7. AlgorithmStep is kept

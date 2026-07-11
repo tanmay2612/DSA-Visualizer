@@ -87,7 +87,9 @@ export function ArrayCanvas({ scene }: ArrayCanvasProps) {
             }}
             transition={{ duration: 0.25, ease: 'easeOut' }}
           />
-          <span className="font-mono text-[10px] text-muted-foreground">{element.value}</span>
+          <span className="font-mono text-[10px] text-muted-foreground">
+            {element.label ?? element.value}
+          </span>
         </motion.div>
       ))}
     </div>

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Star } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { getAlgorithmById } from '@/algorithms/registry';
+import type { AlgorithmDefinition } from '@/algorithms/shared/types';
 import { arrayAdapter } from '@/engine/adapters/arrayAdapter';
 import { graphAdapter } from '@/engine/adapters/graphAdapter';
 import { treeAdapter } from '@/engine/adapters/treeAdapter';
@@ -16,8 +17,9 @@ import type {
   TreeAlgorithmStep,
 } from '@/algorithms/shared/types';
 import { ArrayCanvas, GraphCanvas, TreeCanvas } from '@/components/visualization';
-import { ArrayInputControls, ControlPanel } from '@/components/controls';
-import { PseudocodeViewer, StepInfoPanel, StatsPanel } from '@/components/panels';
+import { ArrayInputControls, ControlPanel, SearchInputControls, TimelineSlider } from '@/components/controls';
+import type { SearchInput } from '@/algorithms/searching/linearSearch';
+import { PseudocodeViewer, StepInfoPanel, StatsPanel, TestCasePanel } from '@/components/panels';
 import { Breadcrumb, ErrorBoundary, PageContainer, SectionHeading } from '@/components/common';
 import { Badge, Button } from '@/components/ui';
 import { ROUTES } from '@/constants/routes';
@@ -110,6 +112,19 @@ export default function AlgorithmDetailPage() {
     (values: number[]) => {
       if (!algorithm) return;
       initialize(algorithm, values);
+    },
+    [algorithm, initialize],
+  );
+
+  // Companion to handleApplyArrayInput for the two searching
+  // algorithms, whose TInput is `{ values, target }` rather than a
+  // plain array — see SearchInputControls' doc comment for the bug
+  // this fixes (ArrayInputControls' plain number[] output was being
+  // fed directly into initialize() for these two, which crashed).
+  const handleApplySearchInput = useCallback(
+    (value: SearchInput) => {
+      if (!algorithm) return;
+      initialize(algorithm, value);
     },
     [algorithm, initialize],
   );
@@ -210,10 +225,24 @@ export default function AlgorithmDetailPage() {
         </div>
       </div>
 
-      {algorithm.visualizationType === 'array' && (
-        <ArrayInputControls
-          size={Array.isArray(input) ? input.length : defaultSize}
-          onApply={handleApplyArrayInput}
+      {algorithm.category === 'searching' ? (
+        <SearchInputControls
+          requiresSortedArray={algorithm.id === 'binary-search'}
+          onApply={handleApplySearchInput}
+        />
+      ) : (
+        algorithm.visualizationType === 'array' && (
+          <ArrayInputControls
+            size={Array.isArray(input) ? input.length : defaultSize}
+            onApply={handleApplyArrayInput}
+          />
+        )
+      )}
+
+      {algorithm.category === 'sorting' && (
+        <TestCasePanel
+          algorithm={algorithm as AlgorithmDefinition<number[]>}
+          onVisualize={handleApplyArrayInput}
         />
       )}
 
@@ -260,6 +289,11 @@ export default function AlgorithmDetailPage() {
           onJumpToEnd={handleJumpToEnd}
           onSpeedChange={setSpeed}
           onRandomize={() => randomizeInput(defaultSize)}
+        />
+        <TimelineSlider
+          currentIndex={progress.currentIndex}
+          totalSteps={progress.totalSteps}
+          onJumpToStep={jumpToStep}
         />
         <StatsPanel
           currentIndex={progress.currentIndex}

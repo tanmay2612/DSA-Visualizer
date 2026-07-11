@@ -138,6 +138,11 @@ export function arrayAdapter(
     case 'found':
       states[currentStep.index] = 'found';
       break;
+    case 'mark-result':
+      currentStep.indices.forEach((index) => {
+        states[index] = 'found';
+      });
+      break;
     case 'done':
       // See ArrayAlgorithmStep's doc comment in shared/types.ts for
       // why `outcome` is an explicit tag rather than inferred from
@@ -165,6 +170,20 @@ export function arrayAdapter(
           // result makes no claim about sortedness and shouldn't
           // erase the visual history that led to "not found".
           break;
+        case 'result':
+          // Interview-problem completion: mark only the answer's
+          // indices as found, preserving whatever accumulated state
+          // (mark-active highlights don't accumulate, so there's
+          // normally nothing to preserve here, but this stays
+          // consistent with 'not-found''s preserve-don't-overwrite
+          // approach rather than assuming array-wide state).
+          return {
+            type: 'array',
+            elements: elements.map((element, index) => ({
+              ...element,
+              state: currentStep.indices.includes(index) ? 'found' : states[index],
+            })),
+          };
       }
       break;
     case 'mark-sorted':

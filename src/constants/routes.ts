@@ -10,6 +10,8 @@ export const ROUTES = {
   algorithmsByCategory: (category: string) => `/algorithms/${category}`,
   algorithmDetail: (category: string, name: string) => `/algorithm/${category}/${name}`,
   compare: '/compare',
+  interview: '/interview',
+  interviewProblem: (id: string) => `/interview/${id}`,
   favorites: '/favorites',
   about: '/about',
 } as const;

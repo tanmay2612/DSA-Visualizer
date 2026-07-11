@@ -18,6 +18,8 @@ const AlgorithmsPage = lazy(() => import('@/pages/AlgorithmsPage'));
 const AlgorithmCategoryPage = lazy(() => import('@/pages/AlgorithmCategoryPage'));
 const AlgorithmDetailPage = lazy(() => import('@/pages/AlgorithmDetailPage'));
 const ComparePage = lazy(() => import('@/pages/ComparePage'));
+const InterviewProblemsPage = lazy(() => import('@/pages/InterviewProblemsPage'));
+const InterviewProblemDetailPage = lazy(() => import('@/pages/InterviewProblemDetailPage'));
 const FavoritesPage = lazy(() => import('@/pages/FavoritesPage'));
 const AboutPage = lazy(() => import('@/pages/AboutPage'));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage'));
@@ -40,6 +42,8 @@ export const router = createBrowserRouter([
       { path: 'algorithms/:category', element: withSuspense(AlgorithmCategoryPage) },
       { path: 'algorithm/:category/:name', element: withSuspense(AlgorithmDetailPage) },
       { path: 'compare', element: withSuspense(ComparePage) },
+      { path: 'interview', element: withSuspense(InterviewProblemsPage) },
+      { path: 'interview/:id', element: withSuspense(InterviewProblemDetailPage) },
       { path: 'favorites', element: withSuspense(FavoritesPage) },
       { path: 'about', element: withSuspense(AboutPage) },
       { path: '*', element: withSuspense(NotFoundPage) },
